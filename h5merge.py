@@ -34,13 +34,11 @@ if True:
         #query = t2.getWhereList(queryString)
         if (row['vehicleID'], row['time']) not in presentData:#len(query) == 0:
             newrow = t2.row
-            z = row.fetch_all_fields()
-            newrow['direction'], newrow['heading'], newrow['latitude'], \
-             newrow['longitude'], newrow['route'], newrow['time'], \
-             newrow['vehicleID'] = z 
+            for field in ('direction', 'heading', 'latitude', 'longitude',
+                    'route', 'time', 'vehicleID'):
+                newrow[field] = row[field]
             newrow.append()
             t2.flush()
-            print n, row['vehicleID'], datetime.datetime.fromtimestamp(row['time'])
             presentData[row['vehicleID'], row['time']] = True
         #else:
         #    assert len(query) == 1, "OMG COLLISION"

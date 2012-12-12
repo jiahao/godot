@@ -72,7 +72,7 @@ def nextbus_daemon(polltime = 15, timeouttime = 60,
         with open(filename, 'w') as f:
             f.write(thedata)
         
-        if now - lastdbaccesstime > datetime.timedelta(hours=3):
+        if now - lastdbaccesstime > datetime.timedelta(hours=2):
             #Spawn new process to load up XML files into database
             print "Spawning XML reader"
             subprocess.Popen("python parseh5.py", shell=True,
