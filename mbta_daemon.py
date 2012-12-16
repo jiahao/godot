@@ -13,8 +13,11 @@ Every hour, the daemon calls a helper code to load it all into an HDF5 database.
 
 import datetime
 import gzip
+import logging
+import os
 import StringIO
 import subprocess
+import sys
 import time
 import urllib2
 
@@ -50,20 +53,21 @@ def nextbus_daemon(polltime = 15, timeouttime = 60,
     theURL: URL to query
     """
 
+    if os.fork():
+        sys.exit()
+
+    logging.basicConfig(filename = 'mbta_daemon.log', level=logging.INFO)
+    logger = logging.getLogger('mbta_daemon')
     lastdbaccesstime = datetime.datetime.now()
     while True:
         now = datetime.datetime.now()
-        #if now.hour < 5 and now.hour > 2: #No bus service, don't bother to ask
-        #    time.sleep(polltime)
-        #    continue
-        
         thedatetime = now.strftime('%Y-%m-%d-%H-%M-%S')
     
         #Read from URL
         thedata = readURL(theURL)
         
         if thedata is None:
-            print 'Could not access Nextbus data at', thedatetime
+            logger.info('%s: Could not access Nextbus data.', thedatetime)
             time.sleep(timeouttime)
             continue
     
@@ -74,7 +78,7 @@ def nextbus_daemon(polltime = 15, timeouttime = 60,
         
         if now - lastdbaccesstime > datetime.timedelta(hours=2):
             #Spawn new process to load up XML files into database
-            print "Spawning XML reader"
+            logger.info("%s Spawning XML reader", thedatetime)
             subprocess.Popen("python parseh5.py", shell=True,
                 stdin=None, stdout=None, stderr=None, close_fds=True)
             lastdbaccesstime = now
@@ -86,4 +90,13 @@ def nextbus_daemon(polltime = 15, timeouttime = 60,
             newnow = datetime.datetime.now()
 
 if __name__ == '__main__':
-    nextbus_daemon()
+    #Do not duplicate
+    import socket
+    try:
+        s = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
+        ## Create an abstract socket, by prefixing it with null. 
+        s.bind( '\0postconnect_gateway_notify_lock')
+        print 'Spawning daemon'
+        nextbus_daemon()
+    except socket.error:
+        print 'Daemon already running'

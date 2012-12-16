@@ -21,11 +21,20 @@ def dist(origin, destination, radius = 6371.392896):
 def GetAllIntervalData(VehicleLocations, route=1, direction='1_1_var0', position=(42.3589399, -71.09363)):
     #Defaults
     # 1 bus, inbound, at 84 Mass Ave
+    direction='1_0_var0'
+
+    # 57 bus inbound at Comm Ave @ Hinsdale
+    #route=57
+    #direction='57_1_var1'
+    #direction='57_1_var1'
+    #position=(42.3494, -71.1030599)
 
     arrivalDistanceThreshold = 0.5
     arrivalTimeThreshold = 300
     maxIntervalThreshold = 2*60*60
     queryString = "((route == '%s') & (direction == '%s'))" % (route, direction) 
+    
+    #queryString = "((route == '57') & ((direction == '57_1_var1') | (direction == '57_1_var0')))" #Outbound 57 has two variants
     
     trajectories = VehicleLocations.where(queryString)
     queryResults = [(timePoint['time'], timePoint['vehicleID'], timePoint['latitude'], timePoint['longitude']) for timePoint in trajectories]

@@ -1,8 +1,13 @@
 #!/usr/bin/env python
 import datetime
+import logging
 import math
-import xml.etree.ElementTree as ET
+import socket
 import tables
+import xml.etree.ElementTree as ET
+
+logging.basicConfig(filename = 'mbta_daemon.log', level=logging.INFO)
+logger = logging.getLogger('xml2hdf5')
 
 class VehicleLocation(tables.IsDescription):
     vehicleID = tables.StringCol(4)
@@ -27,14 +32,14 @@ def parse_mbta_xml(database, thefile, presentData = None):
         tree = ET.parse(thefile)
         root = tree.getroot()
     except ET.ParseError: #Error parsing XML content of the file
-        print 'Could not find root of XML file', thefile
+        logger.error('Could not find root of XML file: %s', thefile)
         return
 
     #Part 1. Get epoch time to nearest second
     #        MBTA reports in whole units of milliseconds
     timeData = root.find('lastTime')
     if timeData is None: #Maybe XML returned an error of some sort
-        print 'XML file %s does not have time data' % thefile
+        logger.warning('XML file %s does not have time data', thefile)
         return
 
     report_time = long(timeData.attrib['time'][:-3])
@@ -64,7 +69,7 @@ def parse_mbta_xml(database, thefile, presentData = None):
                 query = database.getWhereList(queryString)
             except tables.exceptions.HDF5ExtError:
                 #gets thrown whenHDF5 file is open and being written to
-                print "Could not get file lock on HDF5 file. Abort."
+                logger.critical("Could not get file lock on HDF5 file. Abort.")
                 import sys
                 sys.exit()
 
@@ -85,17 +90,27 @@ def parse_mbta_xml(database, thefile, presentData = None):
                 presentData[data['vehicleID'], data['time']] = True
 
     database.flush()
-    print 'Parsed', thefile
+    logger.info('Parsed data from XML file: %s', thefile)
     return presentData
 
 
 def ParseAll(theHDF5FileName = 'mbta_trajectories.h5', Cleanup = True):
     import glob, os
 
-    compressionOptions = tables.Filters(complevel=9, complib='blosc')
-    f = tables.openFile(theHDF5FileName, mode = 'a',
-        filters = compressionOptions, title = 'Historical MBTA bus data')
+    try:
+        s = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
+        ## Create an abstract socket, by prefixing it with null. 
+        s.bind('\0mbta_hdf5_writer_'+theHDF5FileName)
+    
+        compressionOptions = tables.Filters(complevel=9, complib='blosc')
+        f = tables.openFile(theHDF5FileName, mode = 'a',
+            filters = compressionOptions, title = 'Historical MBTA bus data')
    
+        logging.debug('Lock acquired on %s', theHDF5FileName)
+    except socket.error:
+        logging.error('Lock could not be acquired on %s', theHDF5FileName)
+        return
+
     try:
         thetable = f.root.VehicleLocations
     except tables.exceptions.NoSuchNodeError:
