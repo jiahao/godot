@@ -8,9 +8,8 @@ gaps = stuff['gaps'].transpose()
 
 fig = p.figure()
 ax = fig.add_subplot(111)
-ax.hist(gaps, 50, normed=True)
-#ax.set_title('Bus gap times for the 1 bus at 84 Mass Ave. (N=%d)' % len(gaps))
-ax.set_title('Bus gap times for outbound Route 57 at Comm. Av. at Hinsdale (N=%d)' % len(gaps))
+ax.hist(gaps, 60, normed=True)
+ax.set_title('Bus gap times (N=%d)' % len(gaps))
 ax.set_xlabel('Gap time (min.)')
 ax.set_ylabel('Probability density (1/min.)')
 avg_gap = scipy.mean(gaps)
@@ -27,6 +26,9 @@ P=lambda beta, s, avg_gap: 2.0/avg_gap * (s/avg_gap)**beta \
 
 #Poisson
 Q=lambda s, avg_gap: 1/avg_gap * scipy.exp(- s/avg_gap)
+p.plot(t, [P(0.1, x, avg_gap) for x in t], linewidth=4, color='g')
+p.plot(t, [P(0.3, x, avg_gap) for x in t], linewidth=4, color='g')
+p.plot(t, [P(0.5, x, avg_gap) for x in t], linewidth=4, color='g')
 p.plot(t, [P(1, x, avg_gap) for x in t], linewidth=4, color='g')
 #p.plot(t, [P(2, x, avg_gap) for x in t], linewidth=4, color='g')
 p.plot(t, [Q(x, avg_gap) for x in t], linewidth=4, color='r')

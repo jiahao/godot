@@ -20,8 +20,17 @@ def dist(origin, destination, radius = 6371.392896):
 
 def GetAllIntervalData(VehicleLocations, route=1, direction='1_1_var0', position=(42.3589399, -71.09363)):
     #Defaults
+    #Get data from
+#   http://webservices.nextbus.com/service/publicXMLFeed?command=routeConfig&a=mbta&r=64
     # 1 bus, inbound, at 84 Mass Ave
+    
+    # 1 bus, outbound, at 84 Mass Ave
     direction='1_0_var0'
+
+    # 64
+    #route=64
+    #direction='64_0_var0'
+    #position=(42.3539299, -71.13637)
 
     # 57 bus inbound at Comm Ave @ Hinsdale
     #route=57
