@@ -34,7 +34,7 @@ if __name__ == '__main__':
 
     all_data = []
     #Iterate over all timed bus stops
-    for schedule_code in ['U']:#['W', 'S', 'U']:
+    for schedule_code in ['W', 'S', 'U']:
         named_bus_stops = ReadMBTATimetable(route = theroute, direction = thedirection,
                         timing = schedule_code)
         for stop_idx, stop in enumerate(named_bus_stops):
@@ -73,6 +73,8 @@ if __name__ == '__main__':
                     #Determine which chunk it belongs to
                     chunktimes = numpy.array([c[0] for c in timetable_chunks])
                     chunk_idx = len(chunktimes[chunktimes < thetime]) - 1
+                    if chunk_idx < 0:
+                        chunk_idx += len(chunktimes)
                     expected_s = timetable_chunks[chunk_idx][1]
                     print stop_idx, schedule_code, chunk_idx, thetime, s, expected_s
 
