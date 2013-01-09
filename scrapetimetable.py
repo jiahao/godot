@@ -71,12 +71,10 @@ def ReadRouteConfig(route):
 def TimeToScheduleCode(thetime = None):
     if thetime is None:
         thetime = datetime.now()
-
-    #Before 3 a.m., consider it previous day
-    if thetime.hour < 3:
-        thetime.replace(day = thetime.day - 1)
-
-    thedate = thetime.date()
+    try:
+        thedate = thetime.date()
+    except AttributeError:
+        thedate = thetime
 
     #Step 1: is it a holiday or other special day?
     #TODO Implement properly, list is hard-coded

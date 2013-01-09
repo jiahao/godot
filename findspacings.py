@@ -38,18 +38,23 @@ def GetAllIntervalData(VehicleLocations, route=1, direction='1_1_var0', position
     #direction='57_1_var1'
     #position=(42.3494, -71.1030599)
 
-    arrivalDistanceThreshold = 0.5
-    arrivalTimeThreshold = 300
-    maxIntervalThreshold = 2*60*60
     queryString = "((route == '%s') & (direction == '%s'))" % (route, direction) 
     
     #queryString = "((route == '57') & ((direction == '57_1_var1') | (direction == '57_1_var0')))" #Outbound 57 has two variants
     
     trajectories = VehicleLocations.where(queryString)
+    return ExtractArrivalIntervals(trajectories, position)
+
+def ExtractArrivalIntervals(trajectories, position, doWrite = True):
+    arrivalDistanceThreshold = 0.5 #km
+    arrivalTimeThreshold = 300     #seconds
+    maxIntervalThreshold = 2*60*60 #seconds
+
     queryResults = [(timePoint['time'], timePoint['vehicleID'], timePoint['latitude'], timePoint['longitude']) for timePoint in trajectories]
     queryResults = sorted(queryResults) #Sort in time
-    
+
     # Try to determine when each bus arrived at the bus stop
+    # TODO this is very primitive, should replace it with some kind of interpolation and least-squares approach
     data = {}
     for timePoint in queryResults:
         theDistance = dist((timePoint[2], timePoint[3]), position)
@@ -76,27 +81,27 @@ def GetAllIntervalData(VehicleLocations, route=1, direction='1_1_var0', position
         for times, _ in vehicleData:
             arrivalTimesUnsorted.append(times)
 
-    arrivalTimes = (sorted(arrivalTimesUnsorted))
-    #for time in arrivalTimes:
-    #    print datetime.datetime.fromtimestamp(time)
-    print len(arrivalTimes), "arrivals recorded"
+    arrivalTimes = sorted(arrivalTimesUnsorted)
 
     arrivalIntervals = numpy.diff(arrivalTimes)
+    times = numpy.array(arrivalTimes[1:]) #Associate interval with later time
+    
+    #Filter out intervals that exceed maximum gap
+    times = times[arrivalIntervals < maxIntervalThreshold]
     arrivalIntervals = arrivalIntervals[arrivalIntervals < maxIntervalThreshold]
-    arrivalIntervals /= 60.0 #Convert to minutes
-    print len(arrivalIntervals), "intervals recorded"
-    #for times in sorted(arrivalIntervals):
-    #    print times
+    arrivalIntervals /= 60.0     #Convert to minutes
+    
+    if doWrite:
+        print len(arrivalTimes), "arrivals recorded"
+        print len(arrivalIntervals), "intervals recorded"
+        import scipy.io
+        data_dict = {'gaps': arrivalIntervals, 'timestamps': times}
+        scipy.io.savemat('data.mat', data_dict, oned_as = 'row')
+        print 'data.mat saved'
 
-    import scipy.io
-    scipy.io.savemat('data.mat', {'gaps': arrivalIntervals}, oned_as='row')
-    print 'data.mat saved'
-
-def doPlot(data):
-    pass
+    return arrivalIntervals, times
 
 if __name__ == '__main__':
     h5file = tables.openFile('mbta_trajectories.h5')
-    spacings = GetAllIntervalData(h5file.root.VehicleLocations)
-    doPlot(spacings)
+    spacings, times = GetAllIntervalData(h5file.root.VehicleLocations)
     h5file.close()
