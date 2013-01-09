@@ -15,6 +15,7 @@ import datetime
 import gzip
 import logging
 import os
+import socket
 import StringIO
 import subprocess
 import sys
@@ -63,9 +64,12 @@ def nextbus_daemon(polltime = 15, timeouttime = 60,
         now = datetime.datetime.now()
         thedatetime = now.strftime('%Y-%m-%d-%H-%M-%S')
     
-        #Read from URL
-        thedata = readURL(theURL)
-        
+        try:
+            #Read from URL
+            thedata = readURL(theURL)
+        except socket.error: #Network connection error
+            thedata = None
+
         if thedata is None:
             logger.info('%s: Could not access Nextbus data.', thedatetime)
             time.sleep(timeouttime)

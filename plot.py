@@ -8,7 +8,7 @@ gaps = stuff['gaps'].transpose()
 
 fig = p.figure()
 ax = fig.add_subplot(111)
-ax.hist(gaps, 60, normed=True)
+ax.hist(gaps, 100, normed=True)
 ax.set_title('Bus gap times (N=%d)' % len(gaps))
 ax.set_xlabel('Gap time (min.)')
 ax.set_ylabel('Probability density (1/min.)')
@@ -26,11 +26,18 @@ P=lambda beta, s, avg_gap: 2.0/avg_gap * (s/avg_gap)**beta \
 
 #Poisson
 Q=lambda s, avg_gap: 1/avg_gap * scipy.exp(- s/avg_gap)
-p.plot(t, [P(0.1, x, avg_gap) for x in t], linewidth=4, color='g')
-p.plot(t, [P(0.3, x, avg_gap) for x in t], linewidth=4, color='g')
-p.plot(t, [P(0.5, x, avg_gap) for x in t], linewidth=4, color='g')
-p.plot(t, [P(1, x, avg_gap) for x in t], linewidth=4, color='g')
-#p.plot(t, [P(2, x, avg_gap) for x in t], linewidth=4, color='g')
-p.plot(t, [Q(x, avg_gap) for x in t], linewidth=4, color='r')
+
+
+#Mix
+mix=0.15
+beta=2
+poisson_mean = avg_gap/6
+wigner_mean = avg_gap
+
+p.plot(t, [mix*Q(x, poisson_mean) for x in t], linewidth=4, color='r')
+p.plot(t, [(1-mix)*P(beta, x, wigner_mean) for x in t], linewidth=4, color='g')
+
+p.plot(t, [mix*Q(x, poisson_mean) + (1-mix)*P(beta, x, wigner_mean) for x in t], linewidth=4, color='k')
+
 p.show()
 
