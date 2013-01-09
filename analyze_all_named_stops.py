@@ -76,7 +76,7 @@ if __name__ == '__main__':
                     expected_s = timetable_chunks[chunk_idx][1]
                     print stop_idx, schedule_code, chunk_idx, thetime, s, expected_s
 
-                    all_data.append(stop_idx, schedule_code, chunk_idx, times[idx], s, expected_s)
+                    all_data.append([stop_idx, schedule_code, chunk_idx, times[idx], s, expected_s])
                 thedate = thenextday #Iterate
 
     h5file.close()
@@ -84,5 +84,5 @@ if __name__ == '__main__':
     #Save data
     import scipy
     import scipy.io as io
-    io.savemat('timetable', {'data': all_data})
-
+    io.savemat('spacings', {'data': all_data}, oned_as = 'row')
+    print len(all_data), 'spacings analyzed'
