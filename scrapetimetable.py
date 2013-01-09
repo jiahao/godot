@@ -78,13 +78,13 @@ def TimeToScheduleCode(thetime = None):
 
     #Step 1: is it a holiday or other special day?
     #TODO Implement properly, list is hard-coded
-    if thedate == datetime(2012, 12, 25): #Christmas 
+    if thedate == date(2012, 12, 25): #Christmas 
         return 'U' #Sunday
-    elif thedate == datetime(2013, 1, 1): #New Year's Day
+    elif thedate == date(2013, 1, 1): #New Year's Day
         return 'U' #Sunday
-    elif thedate == datetime(2013, 1, 21): #MLK Day
+    elif thedate == date(2013, 1, 21): #MLK Day
         return 'S' #Saturday
-    elif thedate == datetime(2013, 2, 18): #Presidents' Day
+    elif thedate == date(2013, 2, 18): #Presidents' Day
         return 'S' #Saturday
         
     #Step 2: find out day of week

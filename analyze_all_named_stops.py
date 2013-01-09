@@ -86,5 +86,13 @@ if __name__ == '__main__':
     #Save data
     import scipy
     import scipy.io as io
-    io.savemat('spacings', {'data': all_data}, oned_as = 'row')
+    data_map = {
+            'stop_idxs': [x[0] for x in all_data],
+            'schedule_codes': [x[1] for x in all_data],
+            'chunk_idxs': [x[2] for x in all_data],
+            'times'     : [x[3] for x in all_data],
+            'spacings': [x[4] for x in all_data],
+            'spacings_expected': [x[5] for x in all_data],
+            }
+    io.savemat('spacings', data_map, oned_as = 'row')
     print len(all_data), 'spacings analyzed'

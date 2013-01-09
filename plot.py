@@ -3,12 +3,14 @@ import scipy
 from scipy.special import gamma
 import scipy.io
 
-stuff = scipy.io.loadmat('data.mat')
-gaps = stuff['gaps'].transpose()
+stuff = scipy.io.loadmat('spacings.mat')
+stop_idxs = stuff['stop_idxs'].transpose()
+gaps = stuff['spacings'].transpose()
 
+gaps = gaps[stop_idxs == 0]
 fig = p.figure()
 ax = fig.add_subplot(111)
-ax.hist(gaps, 100, normed=True)
+ax.hist(gaps, (int(max(gaps/10))+1)*10, normed=True)
 ax.set_title('Bus gap times (N=%d)' % len(gaps))
 ax.set_xlabel('Gap time (min.)')
 ax.set_ylabel('Probability density (1/min.)')
