@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 from bs4 import BeautifulSoup
-from datetime import datetime, time, timedelta
+from datetime import date, datetime, time, timedelta
 import numpy
 import urllib2
 import xml.etree.ElementTree as ET
@@ -57,15 +57,16 @@ def ReadRouteConfig(route):
     for stop in route.findall('stop'):
         stops.append(stop.attrib)
 
-    #for direction in route.findall('direction'):
-    #    print direction.tag, direction.attrib
-    #    for stop in direction.findall('stop'):
-    #        print stop.tag, stop.attrib
+    directions = []
+    for direction in route.findall('direction'):
+        directions.append([direction.attrib])
+        for stop in direction.findall('stop'):
+            directions[-1].append(stop.attrib)
     
     #Path information - TODO use it
     #for path in route.findall('path):
-    
-    return stops
+
+    return stops, directions
 
 
 def TimeToScheduleCode(thetime = None):
@@ -161,7 +162,7 @@ if __name__ == '__main__':
 
     named_bus_stops = ReadMBTATimetable(route = 1, direction = 'I',
             timing = TimeToScheduleCode())
-    bus_stop_data = ReadRouteConfig(route = 1)
+    bus_stop_data, _ = ReadRouteConfig(route = 1)
 
     #Match bus stop names from NextBus to MBTA website
     for stop in named_bus_stops:
