@@ -1,3 +1,6 @@
+*.pyc
+*.pyo
+*.png
 *.log
 *.out
 *.mat
